@@ -25,6 +25,16 @@
       "date": "2026-11-20",
       "prerelease": false,
       "groups": [
+{
+          "type": "feat",
+          "entries": [
+            {
+              "id": "a103e05",
+              "scope": "branding",
+              "text": "New UniPulse app icon (UP monogram)"
+            }
+          ]
+        },
         {
           "type": "fix",
           "entries": [
@@ -32,24 +42,6 @@
               "id": "d755675",
               "scope": "release",
               "text": "Simplified UniPulse download and checksum filenames"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "version": "0.9.5",
-      "tag": "v0.9.5",
-      "date": "2026-11-20",
-      "prerelease": false,
-      "groups": [
-        {
-          "type": "feat",
-          "entries": [
-            {
-              "id": "a103e05",
-              "scope": "branding",
-              "text": "New UniPulse app icon (UP monogram)"
             }
           ]
         }
