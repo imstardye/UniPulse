@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全问题 / Security
+    url: https://github.com/imstardye/UniPulse/security/advisories/new
+    about: 私下报告漏洞，不要在公开 issue 里写细节 / Report a vulnerability privately; keep its details out of public issues

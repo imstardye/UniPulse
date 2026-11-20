@@ -1,0 +1,6 @@
+id=flclash_mitm_ca
+name=UniPulse MITM CA
+version=1
+versionCode=1
+author=UniPulse
+description=Adds UniPulse's MITM certificate to the system's trusted CAs.

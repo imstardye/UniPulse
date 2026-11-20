@@ -1,0 +1,41 @@
+display_name: UniPulse
+package_name: UniPulse
+maintainer:
+  name: imstardye
+  email: imstardye@users.noreply.github.com
+
+priority: optional
+section: x11
+installed_size: 6604
+essential: false
+icon: ./assets/images/icon.png
+
+dependencies:
+  - libsecret-1-0
+
+# The Helper unit is written on demand by the app, not at install time, so only
+# its teardown belongs here; the binary is already gone when postrm runs.
+postuninstall_scripts:
+  - 'case "${1:-}" in remove|purge) ;; *) exit 0 ;; esac'
+  - 'systemctl disable --now unipulse-helper.service >/dev/null 2>&1 || true'
+  - 'rm -f /etc/systemd/system/unipulse-helper.service'
+  - 'systemctl daemon-reload >/dev/null 2>&1 || true'
+
+supported_mime_type:
+  - x-scheme-handler/unipulse
+  - x-scheme-handler/clash
+  - x-scheme-handler/clashmeta
+  - x-scheme-handler/flclash
+
+keywords:
+  - UniPulse
+  - Clash
+  - ClashMeta
+  - Proxy
+
+generic_name: UniPulse
+
+categories:
+  - Network
+
+startup_notify: true

@@ -1,0 +1,8 @@
+script_template: inno_setup.iss
+app_id: 47F03D5B-782E-52BA-83CC-7B1AA37D3BFC
+app_name: UniPulse
+publisher: imstardye
+publisher_url: https://github.com/imstardye/UniPulse
+display_name: UniPulse
+executable_name: UniPulse.exe
+setup_icon_file: windows\runner\resources\app_icon.ico
