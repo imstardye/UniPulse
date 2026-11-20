@@ -58,6 +58,10 @@ class ChangelogBuilder {
         if (!version.prerelease) version.tag: version,
     };
     final boundaryTag = VersionTag.tryParse(boundary);
+    final boundaryRevision =
+        boundaryTag != null && !git.tagExists(boundaryTag.name)
+        ? git.rootCommit()
+        : boundaryTag?.name;
     final stable = git
         .stableTags()
         .where((tag) => boundaryTag == null || tag.compareTo(boundaryTag) > 0)
@@ -68,7 +72,7 @@ class ChangelogBuilder {
 
     if (pending != null && !git.tagExists(pending.tag)) {
       final commits = git.commits(
-        from: stable.isEmpty ? boundaryTag?.name : stable.first.name,
+        from: stable.isEmpty ? boundaryRevision : stable.first.name,
         to: 'HEAD',
       );
       commitIdsByTag[pending.tag] = _idsOf(commits);
@@ -87,7 +91,7 @@ class ChangelogBuilder {
       final tag = stable[index];
       final previous = index + 1 < stable.length
           ? stable[index + 1].name
-          : boundaryTag?.name;
+          : boundaryRevision;
       final commits = git.commits(from: previous, to: tag.name);
       commitIdsByTag[tag.name] = _idsOf(commits);
       final existing = kept[tag.name];

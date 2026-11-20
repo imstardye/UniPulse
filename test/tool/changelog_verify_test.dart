@@ -162,6 +162,66 @@ void main() {
     expect(problems.single, contains('fix:$hidden'));
   });
 
+  for (final tagged in [false, true]) {
+    group('without a boundary tag, release tagged: $tagged', () {
+      setUp(() {
+        run(['tag', '--delete', 'v1.0.0']);
+        if (!tagged) {
+          run(['tag', '--delete', 'v1.1.0']);
+        }
+      });
+
+      test('accepts entries covering the root-to-release range', () {
+        final changelog = Changelog(
+          versions: [
+            curated(merges: [fix, refactor], omit: [hidden]),
+          ],
+        );
+
+        expect(check(changelog).problems, isEmpty);
+      });
+
+      test('still rejects missing derived entries', () {
+        final changelog = Changelog(
+          versions: [
+            curated(merges: [fix]),
+          ],
+        );
+
+        expect(check(changelog).problems.single, contains('fix:$hidden'));
+      });
+
+      if (tagged) {
+        test('still rejects a release tag without a recorded version', () {
+          final problems = check(Changelog.empty).problems;
+
+          expect(
+            problems.single,
+            contains('v1.1.0 is tagged in git but missing'),
+          );
+        });
+      }
+
+      test('still rejects the root and IDs outside the range', () {
+        final root = run([
+          'rev-list',
+          '--max-parents=0',
+          'HEAD',
+        ]).substring(0, 7);
+        final changelog = Changelog(
+          versions: [
+            curated(merges: [fix, refactor, root], omit: [hidden, 'deadbee']),
+          ],
+        );
+
+        final problems = check(changelog).problems;
+        expect(problems.single, contains('outside its range'));
+        expect(problems.single, contains(root));
+        expect(problems.single, contains('deadbee'));
+      });
+    });
+  }
+
   test('a CHANGELOG.md that does not match the data is reported', () {
     final changelog = Changelog(
       versions: [

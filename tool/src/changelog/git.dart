@@ -120,6 +120,9 @@ class Git {
 
   String head() => _run(['rev-parse', 'HEAD']).trim();
 
+  String rootCommit() =>
+      _run(['rev-list', '--max-parents=0', '--max-count=1', 'HEAD']).trim();
+
   List<RawCommit> commits({String? from, required String to}) {
     final range = from == null ? to : '$from..$to';
     final output = _run([

@@ -65,6 +65,68 @@ void main() {
     expect(versions.single.date, '2026-01-02');
   });
 
+  test('a missing boundary starts the first stable range at the root', () {
+    commit('feat(d): next feature');
+    git(['tag', 'v1.2.0']);
+    final expected = build();
+    git(['tag', '--delete', 'v1.0.0']);
+
+    final actual = ChangelogBuilder(Git(workingDirectory: repo.path)).build();
+
+    expect(
+      encodeChangelog(actual.changelog),
+      encodeChangelog(expected.changelog),
+    );
+    expect(actual.commitIdsByTag, expected.commitIdsByTag);
+  });
+
+  test('a repository without tags starts the pending range at the root', () {
+    final scoped = Git(workingDirectory: repo.path);
+    final commits = scoped.commits(from: 'v1.0.0', to: 'HEAD');
+    git([
+      'tag',
+      '--delete',
+      'v1.0.0',
+      'v1.1.0-pre.1',
+      'v1.1.0',
+      'backup-pre-squash-deadbee',
+    ]);
+
+    final actual = ChangelogBuilder(scoped).build(
+      pending: const PendingVersion(version: '1.2.0', date: '2026-02-03'),
+    );
+    final version = actual.changelog.versions.single;
+
+    expect(version.tag, 'v1.2.0');
+    expect(
+      version.groups
+          .firstWhere((group) => group.type == ChangelogType.feat)
+          .entries
+          .map((entry) => entry.text),
+      ['Second feature', 'First feature'],
+    );
+    expect(
+      actual.commitIdsByTag[version.tag],
+      commits.map((commit) => commit.shortHash).toSet(),
+    );
+  });
+
+  test('an existing boundary after the root still excludes earlier work', () {
+    git(['tag', '--force', 'v1.0.0', 'v1.1.0~2']);
+
+    final actual = build();
+    final version = actual.changelog.versions.single;
+
+    expect(
+      version.groups
+          .firstWhere((group) => group.type == ChangelogType.feat)
+          .entries
+          .map((entry) => entry.text),
+      ['Second feature'],
+    );
+    expect(actual.commitIdsByTag[version.tag], hasLength(2));
+  });
+
   test('preserves frozen history before the first structured release', () {
     git(['checkout', '--quiet', '--orphan', 'frozen-history']);
     commit('chore: optimize commented policy');

@@ -2,6 +2,24 @@
   "schemaVersion": 2,
   "versions": [
     {
+      "version": "0.9.5",
+      "tag": "v0.9.5",
+      "date": "2026-11-20",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "a103e05",
+              "scope": "branding",
+              "text": "New UniPulse app icon (UP monogram)"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "version": "0.9.4",
       "tag": "v0.9.4",
       "date": "2026-11-19",
