@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.9.7 (2026-11-20)
+
+**Bug Fixes**
+
+- **android** Use the UP mark for the tile and notification icons (d474e96)
+
 ## v0.9.6 (2026-11-20)
 
 **Bug Fixes**

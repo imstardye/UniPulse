@@ -1,7 +1,7 @@
 name: uni_pulse
 description: UniPulse is a multi-platform proxy client based on ClashMeta/mihomo, simple and easy to use, open-source and ad-free.
 publish_to: 'none'
-version: 0.9.6+2026110401
+version: 0.9.7+2026110401
 environment:
   sdk: '>=3.10.0 <4.0.0'
   flutter: '>=3.50.0'

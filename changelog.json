@@ -1,6 +1,24 @@
 {
   "schemaVersion": 2,
   "versions": [
+{
+      "version": "0.9.7",
+      "tag": "v0.9.7",
+      "date": "2026-11-20",
+      "prerelease": false,
+      "groups": [
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "d474e96",
+              "scope": "android",
+              "text": "Use the UP mark for the tile and notification icons"
+            }
+          ]
+        }
+      ]
+    },
     {
       "version": "0.9.6",
       "tag": "v0.9.6",
