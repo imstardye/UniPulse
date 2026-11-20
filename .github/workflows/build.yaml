@@ -581,29 +581,21 @@ jobs:
           python release_telegram.py
 
       - name: Patch release.md
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
-          line=$(jq -r '.artifacts[0].line' dist/manifest.json)
-          version=$(jq -r '.artifacts[0].version' dist/manifest.json)
-          sed -e "s|TAG|${{ github.ref_name }}|g" -e "s|LINE|$line|g" -e "s|VERSION|$version|g" \
-            ./.github/release_template.md >> release.md
-
-      # Dev-line apps released before these names update from the old names; keep until the user says stop.
-      - name: Copy the Windows installers and APKs under their old names
-        if: ${{ env.IS_STABLE == 'true' }}
-        run: |
-          cd ./dist
-          jq -r '.artifacts[]
-            | select(.line == "dev")
-            | select((.os == "windows" and .form == "setup") or .os == "android")
-            | [.name, "FlClash-\(.version)-" + (
-                if .os == "windows" then "windows-\(.arch)-setup.exe"
-                else "android-" + {arm64: "arm64-v8a", armv7: "armeabi-v7a", amd64: "x86_64"}[.arch] + ".apk"
-                end)]
-            | @tsv' manifest.json |
-            while IFS=$'\t' read -r name legacy; do
-              cp "$name" "$legacy"
-              sha256sum "./$legacy" >> SHA256SUMS
-            done
+          replacements=$(jq -er --arg tag "$TAG" '
+            "s|{{TAG}}|\($tag)|g",
+            (.artifacts[] | (.name | split(".")[-1]) as $ext
+              | "s|{{\(.os)-\(.arch)-\($ext)}}|\(.name)|g")
+          ' dist/manifest.json)
+          downloads=$(sed -f - ./.github/release_template.md <<< "$replacements")
+          if [[ "$downloads" == *'{{'* ]]; then
+            echo 'Release download links are missing artifacts from the manifest' >&2
+            exit 1
+          fi
+          printf '%s\n' "$downloads" >> release.md
 
       - name: Release
         if: ${{ env.IS_STABLE == 'true' }}
@@ -614,21 +606,24 @@ jobs:
 
       - name: Create Homebrew Cask Source Dir
         if: ${{ env.IS_STABLE == 'true' }}
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
           dmg() {
             jq -er --arg arch "$1" '.artifacts[] | select(.os == "macos" and .arch == $arch)' dist/manifest.json
           }
-          line=$(dmg arm64 | jq -r .line)
-          version=$(dmg arm64 | jq -r .version)
-          arm_sha=$(dmg arm64 | jq -r .sha256)
-          amd_sha=$(dmg amd64 | jq -r .sha256)
+          arm=$(dmg arm64)
+          amd=$(dmg amd64)
 
           mkdir -p ./brew/Casks
           sed \
-            -e "s|LINE|$line|g" \
-            -e "s|VERSION|$version|g" \
-            -e "s|ARM_SHA256|$arm_sha|g" \
-            -e "s|AMD_SHA256|$amd_sha|g" \
+            -e "s|{{TAG}}|$TAG|g" \
+            -e "s|{{VERSION}}|$(jq -r .version <<< "$arm")|g" \
+            -e "s|{{ARM_DMG}}|$(jq -r .name <<< "$arm")|g" \
+            -e "s|{{AMD_DMG}}|$(jq -r .name <<< "$amd")|g" \
+            -e "s|{{ARM_SHA256}}|$(jq -r .sha256 <<< "$arm")|g" \
+            -e "s|{{AMD_SHA256}}|$(jq -r .sha256 <<< "$amd")|g" \
             ./.github/homebrew_cask_template.rb > ./brew/Casks/unipulse.rb
 
       - name: Push to Homebrew tap

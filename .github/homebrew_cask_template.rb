@@ -1,13 +1,13 @@
 cask "unipulse" do
-  version "VERSION"
+  version "{{VERSION}}"
 
   on_macos do
-    arch arm: "arm64", intel: "amd64"
+    arch arm: "{{ARM_DMG}}", intel: "{{AMD_DMG}}"
 
-    sha256 arm:   "ARM_SHA256",
-           intel: "AMD_SHA256"
+    sha256 arm:   "{{ARM_SHA256}}",
+           intel: "{{AMD_SHA256}}"
 
-    url "https://github.com/imstardye/UniPulse/releases/download/v#{version}/UniPulse-LINE-#{version}-macos-#{arch}.dmg"
+    url "https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/#{arch}"
   end
 
   name "UniPulse"

@@ -25,11 +25,11 @@ void main() {
       for (final arch in [ReleaseArch.amd64, ReleaseArch.arm64]) {
         expect(
           name(ReleaseOs.windows, arch, 'exe', form: ReleaseForm.setup),
-          'UniPulse-dev-0.9.4-windows-${arch.name}-setup.exe',
+          'UniPulse-0.9.4-windows-${arch.name}-setup.exe',
         );
         expect(
           name(ReleaseOs.windows, arch, 'zip', form: ReleaseForm.portable),
-          'UniPulse-dev-0.9.4-windows-${arch.name}-portable.zip',
+          'UniPulse-0.9.4-windows-${arch.name}-portable.zip',
         );
       }
     });
@@ -38,12 +38,12 @@ void main() {
       for (final arch in [ReleaseArch.amd64, ReleaseArch.arm64]) {
         expect(
           name(ReleaseOs.macos, arch, 'dmg'),
-          'UniPulse-dev-0.9.4-macos-${arch.name}.dmg',
+          'UniPulse-0.9.4-macos-${arch.name}.dmg',
         );
         for (final extension in ['deb', 'rpm', 'AppImage']) {
           expect(
             name(ReleaseOs.linux, arch, extension),
-            'UniPulse-dev-0.9.4-linux-${arch.name}.$extension',
+            'UniPulse-0.9.4-linux-${arch.name}.$extension',
           );
         }
       }
@@ -56,10 +56,10 @@ void main() {
             name(ReleaseOs.android, arch, 'apk'),
         ],
         [
-          'UniPulse-dev-0.9.4-android-amd64.apk',
-          'UniPulse-dev-0.9.4-android-arm64.apk',
-          'UniPulse-dev-0.9.4-android-armv7.apk',
-          'UniPulse-dev-0.9.4-android-universal.apk',
+          'UniPulse-0.9.4-android-amd64.apk',
+          'UniPulse-0.9.4-android-arm64.apk',
+          'UniPulse-0.9.4-android-armv7.apk',
+          'UniPulse-0.9.4-android-universal.apk',
         ],
       );
     });
@@ -88,7 +88,7 @@ void main() {
       expect(version, '0.9.4-nightly.20261106.394f5bb');
       expect(
         name(ReleaseOs.linux, ReleaseArch.amd64, 'AppImage', version: version),
-        'UniPulse-dev-0.9.4-nightly.20261106.394f5bb-linux-amd64.AppImage',
+        'UniPulse-0.9.4-nightly.20261106.394f5bb-linux-amd64.AppImage',
       );
     });
 
@@ -111,6 +111,10 @@ void main() {
   });
 
   test('the checksum file is named per line and version', () {
+    expect(
+      releaseChecksumsName(ReleaseLine.dev, '0.9.6'),
+      'UniPulse-0.9.6-SHA256SUMS',
+    );
     expect(
       releaseChecksumsName(ReleaseLine.rs, '0.9.4-pre.2'),
       'UniPulse-rs-0.9.4-pre.2-SHA256SUMS',

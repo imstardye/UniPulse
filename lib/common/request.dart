@@ -151,35 +151,23 @@ class Request {
     ProgressCallback? onReceiveProgress,
     CancelToken? cancelToken,
   }) async {
-    final checksumName = updateChecksumsName(tag);
-    Response<String>? sums;
-    for (final candidate in [
-      checksumName,
-      checksumName.replaceFirst('UniPulse-', 'FlClash-'),
-      'SHA256SUMS',
-    ]) {
-      try {
-        sums = await releaseDio.getUri<String>(
-          releaseAssetUri(tag, candidate),
-          options: Options(responseType: ResponseType.plain),
-          cancelToken: cancelToken,
-        );
-        break;
-      } on DioException catch (error) {
-        if (error.response?.statusCode != HttpStatus.notFound) rethrow;
-      }
+    final Response<String> sums;
+    try {
+      sums = await releaseDio.getUri<String>(
+        releaseAssetUri(tag, updateChecksumsName(tag)),
+        options: Options(responseType: ResponseType.plain),
+        cancelToken: cancelToken,
+      );
+    } on DioException catch (error) {
+      if (error.response?.statusCode != HttpStatus.notFound) rethrow;
+      throw ReleaseNotVerifiedException(name);
     }
-    var assetName = name;
-    var expected = releaseChecksum(sums?.data ?? '', assetName);
-    if (expected == null) {
-      assetName = name.replaceFirst('UniPulse-', 'FlClash-');
-      expected = releaseChecksum(sums?.data ?? '', assetName);
-    }
+    final expected = releaseChecksum(sums.data ?? '', name);
     if (expected == null) {
       throw ReleaseNotVerifiedException(name);
     }
-    final path = join(directory, assetName);
-    final uri = releaseAssetUri(tag, assetName);
+    final path = join(directory, name);
+    final uri = releaseAssetUri(tag, name);
     if (app case final android?) {
       await android.downloadFile(
         uri,

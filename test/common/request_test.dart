@@ -5,10 +5,8 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:uni_pulse/common/app_update.dart';
 import 'package:uni_pulse/common/constant.dart';
 import 'package:uni_pulse/common/exception.dart';
-import 'package:uni_pulse/common/release_asset.dart';
 import 'package:uni_pulse/common/request.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -144,13 +142,9 @@ void main() {
   });
 
   group('downloadVerifiedRelease', () {
-    final name = releaseAssetName(
-      line: appReleaseLine,
-      version: '1.2.3',
-      os: ReleaseOs.android,
-      arch: ReleaseArch.arm64,
-      extension: 'apk',
-    );
+    const releasePath = '/$repository/releases/download/v1.2.3';
+    const name = 'UniPulse-1.2.3-android-arm64.apk';
+    const checksumPath = '$releasePath/UniPulse-1.2.3-SHA256SUMS';
     final package = utf8.encode('package');
     final digest = sha256.convert(package).toString();
     late Directory directory;
@@ -164,10 +158,8 @@ void main() {
     Request requestServing(String sums, List<int> asset) {
       return Request()
         ..releaseDio.httpClientAdapter = _PathAdapter({
-          '/$repository/releases/download/v1.2.3/${updateChecksumsName('v1.2.3')}':
-              () => ResponseBody.fromString(sums, 200),
-          '/$repository/releases/download/v1.2.3/$name': () =>
-              ResponseBody.fromBytes(asset, 200),
+          checksumPath: () => ResponseBody.fromString(sums, 200),
+          '$releasePath/$name': () => ResponseBody.fromBytes(asset, 200),
         });
     }
 
@@ -179,21 +171,16 @@ void main() {
       );
     }
 
-    test('verifies legacy-prefixed assets from the new repository', () async {
-      final legacyName = name.replaceFirst('UniPulse-', 'FlClash-');
-      final checksumName = updateChecksumsName('v1.2.3');
+    test('refuses a release without the named checksum file', () async {
       final request = Request()
         ..releaseDio.httpClientAdapter = _PathAdapter({
-          '/$repository/releases/download/v1.2.3/$checksumName': () =>
-              ResponseBody.fromString('', 404),
-          '/$repository/releases/download/v1.2.3/${checksumName.replaceFirst('UniPulse-', 'FlClash-')}':
-              () => ResponseBody.fromString('$digest  ./$legacyName\n', 200),
-          '/$repository/releases/download/v1.2.3/$legacyName': () =>
-              ResponseBody.fromBytes(package, 200),
+          checksumPath: () => ResponseBody.fromString('', 404),
         });
-      final path = await download(request);
-      expect(path, endsWith(legacyName));
-      expect(await File(path).readAsBytes(), package);
+      await expectLater(
+        download(request),
+        throwsA(isA<ReleaseNotVerifiedException>()),
+      );
+      expect(directory.listSync(), isEmpty);
     });
 
     test('keeps a file matching the published digest', () async {
@@ -201,6 +188,7 @@ void main() {
 
       final path = await download(request);
 
+      expect(File(path).uri.pathSegments.last, name);
       expect(await File(path).readAsBytes(), package);
     });
 

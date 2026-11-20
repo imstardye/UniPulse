@@ -37,6 +37,14 @@ String _checkedVersion(String version) {
   return version;
 }
 
+String _releaseVersionPrefix(ReleaseLine line, String version) {
+  final lineSuffix = switch (line) {
+    ReleaseLine.dev => '',
+    ReleaseLine.rs => '-rs',
+  };
+  return '$releaseFilePrefix$lineSuffix-${_checkedVersion(version)}';
+}
+
 String releaseAssetName({
   required ReleaseLine line,
   required String version,
@@ -46,9 +54,7 @@ String releaseAssetName({
   required String extension,
 }) {
   final parts = [
-    releaseFilePrefix,
-    line.name,
-    _checkedVersion(version),
+    _releaseVersionPrefix(line, version),
     os.name,
     arch.name,
     ?form?.name,
@@ -57,5 +63,5 @@ String releaseAssetName({
 }
 
 String releaseChecksumsName(ReleaseLine line, String version) {
-  return '$releaseFilePrefix-${line.name}-${_checkedVersion(version)}-SHA256SUMS';
+  return '${_releaseVersionPrefix(line, version)}-SHA256SUMS';
 }

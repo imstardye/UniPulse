@@ -1777,14 +1777,15 @@ and step without building, for any platform.
   Linux binary name and window class come from `BINARY_NAME` and `APPLICATION_ID` in `linux/CMakeLists.txt`.
   `windows/packaging/exe/inno_setup.iss` takes `{{NAME}}` placeholders, filled by `innoVariables`, and nothing else.
 - Names come from `releaseAssetName` in `lib/common/release_asset.dart`, which the in-app updater also uses:
-  `UniPulse-<line>-<version>-<os>-<arch>[-<form>].<ext>`. The line is `rs` when `build_config.yaml` names
-  `concord_dir` and `dev` when it names `core_dir`, whatever the branch. The version is the `v*` tag on `HEAD` without
+  `UniPulse-<version>-<os>-<arch>[-<form>].<ext>` on `dev` and `UniPulse-rs-<version>-<os>-<arch>[-<form>].<ext>` on
+  `rs`. The line is `rs` when `build_config.yaml` names `concord_dir` and `dev` when it names `core_dir`, whatever
+  the branch. The version is the `v*` tag on `HEAD` without
   its `v` and with `+` turned into `.` (GitHub rewrites `+` in asset names), else `<pubspec version>-nightly.<commit
   date>.<sha7>`. The form is `setup` or `portable` on Windows and absent elsewhere.
-- Each run writes `dist/manifest.json` and `UniPulse-<line>-<version>-SHA256SUMS`. The release job merges the
-  per-platform runs with `dart run tool/package.dart merge`, and its release notes, Homebrew cask and F-Droid copy
-  read names from the merged manifest. For the `dev` line it also uploads the Windows installers and APKs under their
-  old names plus a `SHA256SUMS`, which apps released before these names still fetch.
+- Each run writes `dist/manifest.json` with the line on every artifact, and a checksum file named
+  `UniPulse-<version>-SHA256SUMS` on `dev` or `UniPulse-rs-<version>-SHA256SUMS` on `rs`. The release job merges
+  the per-platform runs with `dart run tool/package.dart merge`, and its release notes, Homebrew cask and F-Droid copy
+  read filenames from the merged manifest.
 - Kept from the fork's patches: package trees normalized to 0755/0644 before `dpkg-deb`, `rpmbuild` and
   `appimagetool` (see Linux Helper below); `dpkg-deb -Zxz`, because the dpkg of UOS and other Debian derivatives
   cannot unpack Ubuntu's default zstd; `StartupWMClass` in every desktop entry; an `AppRun` that passes its arguments

@@ -104,14 +104,14 @@
     switch (platform) {
       case 'android':
         return [
-          { id: 'android-arm64-v8a.apk', kind: 'APK', title: 'arm64-v8a', note: 'noteAndroidArm64', rec: true },
-          { id: 'android-armeabi-v7a.apk', kind: 'APK', title: 'armeabi-v7a', note: 'noteAndroidArm32' },
-          { id: 'android-x86_64.apk', kind: 'APK', title: 'x86_64', note: 'noteAndroidX64' },
+          { id: 'android-arm64.apk', kind: 'APK', title: 'arm64-v8a', note: 'noteAndroidArm64', rec: true },
+          { id: 'android-armv7.apk', kind: 'APK', title: 'armeabi-v7a', note: 'noteAndroidArm32' },
+          { id: 'android-amd64.apk', kind: 'APK', title: 'x86_64', note: 'noteAndroidX64' },
         ];
       case 'windows':
         return [
           { id: `windows-${goArch(arch)}-setup.exe`, kind: 'EXE', titleKey: 'winSetup', note: 'noteWinSetup', rec: true },
-          { id: `windows-${goArch(arch)}.zip`, kind: 'ZIP', titleKey: 'winPortable', note: 'noteWinPortable' },
+          { id: `windows-${goArch(arch)}-portable.zip`, kind: 'ZIP', titleKey: 'winPortable', note: 'noteWinPortable' },
         ];
       case 'macos':
         return [
@@ -232,8 +232,9 @@
       heroText.textContent = t('heroRelease', release.tag);
       $('#hero-release').href = `#${release.tag}`;
       $('#dl-meta').textContent = t('dlMeta', release.version, formatDate(release.date, state.lang));
-      $('#sums-link').href = `${REPO}/releases/download/${release.tag}/SHA256SUMS`;
-      $('#sums-link').hidden = !release.assets || !release.assets.has('SHA256SUMS');
+      const sums = `UniPulse-${release.version}-SHA256SUMS`;
+      $('#sums-link').href = `${REPO}/releases/download/${release.tag}/${sums}`;
+      $('#sums-link').hidden = !release.assets || !release.assets.has(sums);
     } else {
       heroText.textContent = t('heroReleaseLoading');
     }

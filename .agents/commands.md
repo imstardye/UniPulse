@@ -24,8 +24,8 @@ dart tool/package.dart android             # every ABI; --arch arm64 for one
 dart tool/package.dart linux --dry-run --arch arm64   # names and steps only, any platform
 ```
 
-Artifacts land in `dist/` as `UniPulse-<line>-<version>-<os>-<arch>[-<form>].<ext>`, with `manifest.json` and
-`UniPulse-<line>-<version>-SHA256SUMS`; see Packaging in `architecture.md`.
+Artifacts land in `dist/` as `UniPulse-<version>-<os>-<arch>[-<form>].<ext>`, with `manifest.json` and
+`UniPulse-<version>-SHA256SUMS`. The rs line uses the `UniPulse-rs-` prefix. See Packaging in `architecture.md`.
 
 The desktop Go core and the Rust helper build automatically: Flutter runs
 `plugins/setup/hook/build.dart` on every `flutter build` and `flutter test`,

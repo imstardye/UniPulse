@@ -376,10 +376,11 @@ hooks:
         ReleaseOs.linux,
         ReleaseArch.amd64,
         'deb',
+        line: ReleaseLine.dev,
       );
       final checksums = writeManifest(dir, [entry]);
 
-      expect(checksums, 'UniPulse-rs-0.9.4-SHA256SUMS');
+      expect(checksums, 'UniPulse-0.9.4-SHA256SUMS');
       expect(
         File(p.join(dir, checksums)).readAsStringSync(),
         '${sha256.convert(utf8.encode(entry.name))}  ${entry.name}\n',
@@ -390,10 +391,10 @@ hooks:
       expect(json['checksums'], checksums);
       expect(json['artifacts'], [
         {
-          'name': 'UniPulse-rs-0.9.4-linux-amd64.deb',
+          'name': 'UniPulse-0.9.4-linux-amd64.deb',
           'sha256': entry.sha256,
           'size': entry.name.length,
-          'line': 'rs',
+          'line': 'dev',
           'version': '0.9.4',
           'channel': 'stable',
           'os': 'linux',
@@ -402,6 +403,9 @@ hooks:
           'commit': 'c' * 40,
         },
       ]);
+      final decoded = readManifest(dir).single;
+      expect(decoded.line, ReleaseLine.dev);
+      expect(decoded.name, entry.name);
     });
 
     test('merges the manifests of several runs into one', () async {
