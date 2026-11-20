@@ -10,14 +10,6 @@ String _androidAttribute(String source, String element, String attribute) {
   ).firstMatch(elementTag)!.group(1)!;
 }
 
-double _androidDoubleAttribute(
-  String source,
-  String element,
-  String attribute,
-) {
-  return double.parse(_androidAttribute(source, element, attribute));
-}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -49,54 +41,95 @@ void main() {
     }
   });
 
-  test('TV adaptive launcher icon stays centered in the safe zone', () {
+  test('TV adaptive launcher icon stays centered in the safe zone', () async {
     final adaptiveIcon = File(
       'android/app/src/main/res/'
       'mipmap-television-anydpi-v26/ic_launcher.xml',
     ).readAsStringSync();
     expect(
       _androidAttribute(adaptiveIcon, 'foreground', 'drawable'),
-      '@drawable/ic_launcher_foreground_tv',
+      '@mipmap/ic_launcher_foreground',
     );
     expect(
       _androidAttribute(adaptiveIcon, 'background', 'drawable'),
       '@color/ic_launcher_background',
     );
 
-    final vector = File(
-      'android/app/src/main/res/drawable/'
-      'ic_launcher_foreground_tv.xml',
-    ).readAsStringSync();
-    final scaleX = _androidDoubleAttribute(vector, 'group', 'scaleX');
-    final scaleY = _androidDoubleAttribute(vector, 'group', 'scaleY');
-    final translateX = _androidDoubleAttribute(vector, 'group', 'translateX');
-    final translateY = _androidDoubleAttribute(vector, 'group', 'translateY');
-    final viewportWidth = _androidDoubleAttribute(
-      vector,
-      'vector',
-      'viewportWidth',
+    const canvasSize = 432;
+    final foreground = File(
+      'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png',
     );
-    final viewportHeight = _androidDoubleAttribute(
-      vector,
-      'vector',
-      'viewportHeight',
+    final codec = await ui.instantiateImageCodec(
+      await foreground.readAsBytes(),
     );
+    addTearDown(codec.dispose);
+    final image = (await codec.getNextFrame()).image;
+    addTearDown(image.dispose);
+    expect((image.width, image.height), (canvasSize, canvasSize));
 
-    // Conservative bounds of the current logo, including the curved caps.
-    const logoBounds = ui.Rect.fromLTRB(54, 33, 179, 206.5);
-    final transformedBounds = ui.Rect.fromLTRB(
-      (logoBounds.left * scaleX + translateX) / viewportWidth * 108,
-      (logoBounds.top * scaleY + translateY) / viewportHeight * 108,
-      (logoBounds.right * scaleX + translateX) / viewportWidth * 108,
-      (logoBounds.bottom * scaleY + translateY) / viewportHeight * 108,
+    final pixels = (await image.toByteData(
+      format: ui.ImageByteFormat.rawRgba,
+    ))!;
+    var alphaLeft = canvasSize;
+    var alphaTop = canvasSize;
+    var alphaRight = 0;
+    var alphaBottom = 0;
+    var logoLeft = canvasSize;
+    var logoTop = canvasSize;
+    var logoRight = 0;
+    var logoBottom = 0;
+    for (var y = 0; y < canvasSize; y++) {
+      for (var x = 0; x < canvasSize; x++) {
+        final offset = (y * canvasSize + x) * 4;
+        final red = pixels.getUint8(offset);
+        final green = pixels.getUint8(offset + 1);
+        final blue = pixels.getUint8(offset + 2);
+        final alpha = pixels.getUint8(offset + 3);
+        if (alpha == 0) continue;
+        if (x < alphaLeft) alphaLeft = x;
+        if (y < alphaTop) alphaTop = y;
+        if (x + 1 > alphaRight) alphaRight = x + 1;
+        if (y + 1 > alphaBottom) alphaBottom = y + 1;
+        if (red < 200 || green < 200 || blue < 200) continue;
+        if (x < logoLeft) logoLeft = x;
+        if (y < logoTop) logoTop = y;
+        if (x + 1 > logoRight) logoRight = x + 1;
+        if (y + 1 > logoBottom) logoBottom = y + 1;
+      }
+    }
+    final alphaBounds = ui.Rect.fromLTRB(
+      alphaLeft.toDouble(),
+      alphaTop.toDouble(),
+      alphaRight.toDouble(),
+      alphaBottom.toDouble(),
     );
-    const safeZone = ui.Rect.fromLTWH(18, 18, 72, 72);
+    final logoBounds = ui.Rect.fromLTRB(
+      logoLeft.toDouble(),
+      logoTop.toDouble(),
+      logoRight.toDouble(),
+      logoBottom.toDouble(),
+    );
+    expect(
+      alphaBounds.isEmpty,
+      isFalse,
+      reason: 'foreground is fully transparent',
+    );
+    expect(logoBounds.isEmpty, isFalse, reason: 'foreground mark is missing');
 
-    expect(transformedBounds.left, greaterThanOrEqualTo(safeZone.left));
-    expect(transformedBounds.top, greaterThanOrEqualTo(safeZone.top));
-    expect(transformedBounds.right, lessThanOrEqualTo(safeZone.right));
-    expect(transformedBounds.bottom, lessThanOrEqualTo(safeZone.bottom));
-    expect(transformedBounds.center.dx, closeTo(safeZone.center.dx, 0.05));
-    expect(transformedBounds.center.dy, closeTo(safeZone.center.dy, 0.05));
+    const pixelsPerDp = canvasSize / 108;
+    const safeZone = ui.Rect.fromLTRB(
+      18 * pixelsPerDp,
+      18 * pixelsPerDp,
+      90 * pixelsPerDp,
+      90 * pixelsPerDp,
+    );
+    expect(logoBounds.left, greaterThanOrEqualTo(safeZone.left));
+    expect(logoBounds.top, greaterThanOrEqualTo(safeZone.top));
+    expect(logoBounds.right, lessThanOrEqualTo(safeZone.right));
+    expect(logoBounds.bottom, lessThanOrEqualTo(safeZone.bottom));
+
+    const centerTolerance = 3;
+    expect(alphaBounds.center.dx, closeTo(canvasSize / 2, centerTolerance));
+    expect(alphaBounds.center.dy, closeTo(canvasSize / 2, centerTolerance));
   });
 }
