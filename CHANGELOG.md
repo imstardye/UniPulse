@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.9.6 (2026-11-20)
+
+**Bug Fixes**
+
+- **release** Simplified UniPulse download and checksum filenames (d755675)
+
 ## v0.9.5 (2026-11-20)
 
 **Features**
