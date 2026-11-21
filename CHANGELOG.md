@@ -1,9 +1,14 @@
 # Changelog
 
-## v0.9.7 (2026-11-20)
+## v0.9.7 (2026-11-21)
+
+**Features**
+
+- **update** When an update has no file to download, the app opens the release page to download it by hand (231bb6b)
 
 **Bug Fixes**
 
+- **release** Release downloads include Windows and Linux ARM64 links, and missing website downloads link to the release page (86bc89f)
 - **android** Use the UP mark for the tile and notification icons (d474e96)
 
 ## v0.9.6 (2026-11-20)

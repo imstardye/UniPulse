@@ -1,15 +1,30 @@
 {
   "schemaVersion": 2,
   "versions": [
-{
+    {
       "version": "0.9.7",
       "tag": "v0.9.7",
-      "date": "2026-11-20",
+      "date": "2026-11-21",
       "prerelease": false,
       "groups": [
         {
+          "type": "feat",
+          "entries": [
+            {
+              "id": "231bb6b",
+              "scope": "update",
+              "text": "When an update has no file to download, the app opens the release page to download it by hand"
+            }
+          ]
+        },
+        {
           "type": "fix",
           "entries": [
+            {
+              "id": "86bc89f",
+              "scope": "release",
+              "text": "Release downloads include Windows and Linux ARM64 links, and missing website downloads link to the release page"
+            },
             {
               "id": "d474e96",
               "scope": "android",
