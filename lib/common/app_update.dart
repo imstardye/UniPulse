@@ -11,6 +11,7 @@ import 'package:uni_pulse/plugins/app.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:path/path.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const appReleaseLine = ReleaseLine.dev;
 
@@ -83,6 +84,15 @@ String updateAssetName(String tag, SelfUpdateAsset asset) {
 
 String updateChecksumsName(String tag) {
   return releaseChecksumsName(appReleaseLine, releaseVersionOfTag(tag));
+}
+
+@visibleForTesting
+Future<bool> Function(Uri uri) launchReleasePage = launchUrl;
+
+Future<bool> openReleasePage() {
+  return launchReleasePage(
+    Uri.https('github.com', '/$repository/releases/latest'),
+  );
 }
 
 Uri releaseAssetUri(String tag, String name) {

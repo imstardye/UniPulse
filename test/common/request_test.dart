@@ -51,7 +51,8 @@ class _PathAdapter implements HttpClientAdapter {
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
   ) async {
-    return byPath[options.uri.path]!();
+    final answer = byPath[options.uri.path];
+    return answer == null ? ResponseBody.fromString('', 404) : answer();
   }
 
   @override
@@ -155,12 +156,15 @@ void main() {
 
     tearDown(() => directory.delete(recursive: true));
 
+    Request requestAt(Map<String, ResponseBody Function()> byPath) {
+      return Request()..releaseDio.httpClientAdapter = _PathAdapter(byPath);
+    }
+
     Request requestServing(String sums, List<int> asset) {
-      return Request()
-        ..releaseDio.httpClientAdapter = _PathAdapter({
-          checksumPath: () => ResponseBody.fromString(sums, 200),
-          '$releasePath/$name': () => ResponseBody.fromBytes(asset, 200),
-        });
+      return requestAt({
+        checksumPath: () => ResponseBody.fromString(sums, 200),
+        '$releasePath/$name': () => ResponseBody.fromBytes(asset, 200),
+      });
     }
 
     Future<String> download(Request request) {
@@ -171,14 +175,16 @@ void main() {
       );
     }
 
-    test('refuses a release without the named checksum file', () async {
-      final request = Request()
-        ..releaseDio.httpClientAdapter = _PathAdapter({
-          checksumPath: () => ResponseBody.fromString('', 404),
-        });
+    test('reports a release without the named checksum file', () async {
       await expectLater(
-        download(request),
-        throwsA(isA<ReleaseNotVerifiedException>()),
+        download(requestAt({})),
+        throwsA(
+          isA<ReleaseFileMissingException>().having(
+            (error) => error.name,
+            'name',
+            'UniPulse-1.2.3-SHA256SUMS',
+          ),
+        ),
       );
       expect(directory.listSync(), isEmpty);
     });
@@ -201,16 +207,58 @@ void main() {
       );
     });
 
-    test('refuses an asset the listing does not name', () async {
+    test('reports an asset the listing does not name', () async {
       final request = requestServing('$digest  ./other.apk\n', package);
 
       await expectLater(
         download(request),
-        throwsA(isA<ReleaseNotVerifiedException>()),
+        throwsA(isA<ReleaseFileMissingException>()),
       );
       expect(directory.listSync(), isEmpty);
     });
+
+    test('reports an asset missing from the release', () async {
+      await expectLater(
+        download(
+          requestAt({
+            checksumPath: () =>
+                ResponseBody.fromString('$digest  $name\n', 200),
+          }),
+        ),
+        throwsA(
+          isA<ReleaseFileMissingException>().having(
+            (error) => error.name,
+            'name',
+            name,
+          ),
+        ),
+      );
+    });
+
+    test('preserves other HTTP failures', () async {
+      await expectLater(
+        download(
+          requestAt({checksumPath: () => ResponseBody.fromString('', 503)}),
+        ),
+        throwsA(isA<DioException>()),
+      );
+    });
   });
+
+  test(
+    'recognizes DownloadManager HTTP 404 and preserves other reasons',
+    () async {
+      for (final reason in [404, 503, 1008, null]) {
+        final error = SystemDownloadException(reason);
+        await expectLater(
+          releaseFile('update.apk', () => Future<void>.error(error)),
+          throwsA(
+            reason == 404 ? isA<ReleaseFileMissingException>() : same(error),
+          ),
+        );
+      }
+    },
+  );
 
   group('downloadTarget', () {
     test('sends a URL without credentials unchanged', () {

@@ -151,43 +151,60 @@ class Request {
     ProgressCallback? onReceiveProgress,
     CancelToken? cancelToken,
   }) async {
-    final Response<String> sums;
-    try {
-      sums = await releaseDio.getUri<String>(
-        releaseAssetUri(tag, updateChecksumsName(tag)),
+    final checksums = updateChecksumsName(tag);
+    final sums = await releaseFile(
+      checksums,
+      () => releaseDio.getUri<String>(
+        releaseAssetUri(tag, checksums),
         options: Options(responseType: ResponseType.plain),
         cancelToken: cancelToken,
-      );
-    } on DioException catch (error) {
-      if (error.response?.statusCode != HttpStatus.notFound) rethrow;
-      throw ReleaseNotVerifiedException(name);
-    }
+      ),
+    );
     final expected = releaseChecksum(sums.data ?? '', name);
     if (expected == null) {
-      throw ReleaseNotVerifiedException(name);
+      throw ReleaseFileMissingException(name);
     }
     final path = join(directory, name);
     final uri = releaseAssetUri(tag, name);
-    if (app case final android?) {
-      await android.downloadFile(
-        uri,
-        path,
-        title: name,
-        onReceiveProgress: onReceiveProgress ?? (_, _) {},
-        cancelToken: cancelToken ?? CancelToken(),
-      );
-    } else {
-      await releaseDio.downloadUri(
-        uri,
-        path,
-        onReceiveProgress: onReceiveProgress,
-        cancelToken: cancelToken,
-      );
-    }
+    await releaseFile(name, () async {
+      if (app case final android?) {
+        await android.downloadFile(
+          uri,
+          path,
+          title: name,
+          onReceiveProgress: onReceiveProgress ?? (_, _) {},
+          cancelToken: cancelToken ?? CancelToken(),
+        );
+      } else {
+        await releaseDio.downloadUri(
+          uri,
+          path,
+          onReceiveProgress: onReceiveProgress,
+          cancelToken: cancelToken,
+        );
+      }
+    });
     if (await fileSha256(path) != expected) {
       throw ReleaseNotVerifiedException(name);
     }
     return path;
+  }
+}
+
+@visibleForTesting
+Future<T> releaseFile<T>(String name, Future<T> Function() fetch) async {
+  try {
+    return await fetch();
+  } on DioException catch (error) {
+    if (error.response?.statusCode == HttpStatus.notFound) {
+      throw ReleaseFileMissingException(name);
+    }
+    rethrow;
+  } on SystemDownloadException catch (error) {
+    if (error.reason == HttpStatus.notFound) {
+      throw ReleaseFileMissingException(name);
+    }
+    rethrow;
   }
 }
 

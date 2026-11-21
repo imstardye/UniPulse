@@ -21,6 +21,15 @@ final class SystemDownloadException implements Exception {
   String toString() => 'SystemDownloadException: $reason';
 }
 
+final class ReleaseFileMissingException implements Exception {
+  final String name;
+
+  const ReleaseFileMissingException(this.name);
+
+  @override
+  String toString() => 'ReleaseFileMissingException: $name';
+}
+
 final class ReleaseNotVerifiedException implements Exception {
   final String name;
 
