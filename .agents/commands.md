@@ -27,6 +27,12 @@ dart tool/package.dart linux --dry-run --arch arm64   # names and steps only, an
 Artifacts land in `dist/` as `UniPulse-<version>-<os>-<arch>[-<form>].<ext>`, with `manifest.json` and
 `UniPulse-<version>-SHA256SUMS`. The rs line uses the `UniPulse-rs-` prefix. See Packaging in `architecture.md`.
 
+After merging the platform artifacts, `dart tool/package.dart check dist` checks the filenames requested by the
+release notes, Homebrew cask, website and updater against the manifest and files, including the updater's checksums.
+The upload job runs it before publishing. `test/tool/release_contract_test.dart` exercises every build-matrix row on
+both release lines. Keep the source readers in `tool/src/package/release_contract.dart` in step when changing their
+formats; an unknown format or unresolved placeholder fails the check.
+
 The desktop Go core and the Rust helper build automatically: Flutter runs
 `plugins/setup/hook/build.dart` on every `flutter build` and `flutter test`,
 and the hook drives `CoreBuilder` from the `setup_hooks` package in

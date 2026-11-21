@@ -129,24 +129,34 @@
     }
   }
 
+  function assetName(release, id) {
+    const prefixes = ['UniPulse', 'UniPulse-rs'];
+    const prefix = release.assets && [...release.assets.keys()].some((name) =>
+      name.startsWith(`${prefixes[1]}-${release.version}-`)) ? prefixes[1] : prefixes[0];
+    return `${prefix}-${release.version}-${id}`;
+  }
+
+  function assetHref(release, name) {
+    if (release.assets && !release.assets.has(name)) return `${REPO}/releases/tag/${release.tag}`;
+    return `${REPO}/releases/download/${release.tag}/${name}`;
+  }
+
   function resolveBuilds(platform, arch) {
     const release = state.release;
     if (!release) return [];
     return buildsFor(platform, arch)
       .map((build) => {
-        const name = `UniPulse-${release.version}-${build.id}`;
+        const name = assetName(release, build.id);
         const asset = release.assets ? release.assets.get(name) : null;
-        if (release.assets && !asset) return null;
         return {
           ...build,
           name,
           title: build.titleKey ? t(build.titleKey) : build.title,
-          href: `${REPO}/releases/download/${release.tag}/${name}`,
+          href: assetHref(release, name),
           size: asset ? asset.size : null,
           digest: asset && asset.digest ? asset.digest.replace(/^sha256:/, '') : null,
         };
-      })
-      .filter(Boolean);
+      });
   }
 
   async function detectDevice() {
@@ -232,9 +242,8 @@
       heroText.textContent = t('heroRelease', release.tag);
       $('#hero-release').href = `#${release.tag}`;
       $('#dl-meta').textContent = t('dlMeta', release.version, formatDate(release.date, state.lang));
-      const sums = `UniPulse-${release.version}-SHA256SUMS`;
-      $('#sums-link').href = `${REPO}/releases/download/${release.tag}/${sums}`;
-      $('#sums-link').hidden = !release.assets || !release.assets.has(sums);
+      $('#sums-link').href = assetHref(release, assetName(release, 'SHA256SUMS'));
+      $('#sums-link').hidden = false;
     } else {
       heroText.textContent = t('heroReleaseLoading');
     }

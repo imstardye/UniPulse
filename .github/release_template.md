@@ -27,7 +27,9 @@
             <td>Windows</td>
             <td>
                 <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{windows-amd64-exe}}"><img src="https://img.shields.io/badge/Setup-x64-2d7d9a.svg?logo=windows"></a><br>
-                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{windows-amd64-zip}}"><img src="https://img.shields.io/badge/Portable-x64-67b7d1.svg?logo=windows"></a>
+                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{windows-arm64-exe}}"><img src="https://img.shields.io/badge/Setup-ARM64-2d7d9a.svg?logo=windows"></a><br>
+                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{windows-amd64-zip}}"><img src="https://img.shields.io/badge/Portable-x64-67b7d1.svg?logo=windows"></a><br>
+                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{windows-arm64-zip}}"><img src="https://img.shields.io/badge/Portable-ARM64-67b7d1.svg?logo=windows"></a>
             </td>
         </tr>
         <tr>
@@ -41,8 +43,11 @@
             <td>Linux</td>
             <td>
                 <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{linux-amd64-AppImage}}"><img src="https://img.shields.io/badge/AppImage-x64-f84e29.svg?logo=linux"> </a><br>
+                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{linux-arm64-AppImage}}"><img src="https://img.shields.io/badge/AppImage-ARM64-f84e29.svg?logo=linux"> </a><br>
                 <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{linux-amd64-deb}}"><img src="https://img.shields.io/badge/DebPackage-x64-FF9966.svg?logo=debian"> </a><br>
-                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{linux-amd64-rpm}}"><img src="https://img.shields.io/badge/RpmPackage-x64-F1B42F.svg?logo=redhat"> </a>
+                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{linux-arm64-deb}}"><img src="https://img.shields.io/badge/DebPackage-ARM64-FF9966.svg?logo=debian"> </a><br>
+                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{linux-amd64-rpm}}"><img src="https://img.shields.io/badge/RpmPackage-x64-F1B42F.svg?logo=redhat"> </a><br>
+                <a href="https://github.com/imstardye/UniPulse/releases/download/{{TAG}}/{{linux-arm64-rpm}}"><img src="https://img.shields.io/badge/RpmPackage-ARM64-F1B42F.svg?logo=redhat"> </a>
             </td>
         </tr>
     </tbody>

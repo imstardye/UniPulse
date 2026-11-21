@@ -553,6 +553,9 @@ jobs:
       - name: Merge the build manifests
         run: dart run tool/package.dart merge artifacts/* --out dist
 
+      - name: Check every file the release is looked up by
+        run: dart run tool/package.dart check dist
+
       - name: Generate release notes
         shell: bash
         env:

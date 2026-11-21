@@ -11,6 +11,7 @@ import 'src/package/context.dart';
 import 'src/package/linux.dart';
 import 'src/package/macos.dart';
 import 'src/package/manifest.dart';
+import 'src/package/release_contract.dart';
 import 'src/package/steps.dart';
 import 'src/package/tools.dart';
 import 'src/package/version.dart';
@@ -64,6 +65,7 @@ void _usage(ArgParser parser) {
   stderr
     ..writeln('Usage: dart tool/package.dart [platform] [options]')
     ..writeln('       dart tool/package.dart merge <dir>... [--out dist]')
+    ..writeln('       dart tool/package.dart check <dir>')
     ..writeln()
     ..writeln('Platform: the host platform (default) or android.')
     ..writeln(parser.usage);
@@ -343,11 +345,35 @@ Future<int> _merge(List<String> arguments) async {
   return 0;
 }
 
+int _check(List<String> arguments) {
+  if (arguments.length != 1) {
+    throw const PackageError('check takes one merged directory');
+  }
+  final failures = releaseContractFailures(
+    Directory.current.path,
+    arguments.single,
+  );
+  for (final failure in failures) {
+    stderr.writeln(failure);
+  }
+  if (failures.isNotEmpty) {
+    throw PackageError(
+      '${arguments.single} lacks ${failures.length} lookup(s) required by '
+      'the site, release notes, Homebrew cask or in-app updater',
+    );
+  }
+  stdout.writeln('${arguments.single} serves every name it is looked up by');
+  return 0;
+}
+
 Future<void> main(List<String> arguments) async {
   final parser = createPackageArgParser();
   try {
     if (arguments.firstOrNull == 'merge') {
       exit(await _merge(arguments.skip(1).toList()));
+    }
+    if (arguments.firstOrNull == 'check') {
+      exit(_check(arguments.skip(1).toList()));
     }
     final results = parser.parse(arguments);
     if (results['help'] as bool) {
