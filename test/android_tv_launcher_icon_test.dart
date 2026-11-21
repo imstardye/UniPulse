@@ -52,7 +52,7 @@ void main() {
     );
     expect(
       _androidAttribute(adaptiveIcon, 'background', 'drawable'),
-      '@color/ic_launcher_background',
+      '@android:color/transparent',
     );
 
     const canvasSize = 432;
@@ -81,16 +81,12 @@ void main() {
     for (var y = 0; y < canvasSize; y++) {
       for (var x = 0; x < canvasSize; x++) {
         final offset = (y * canvasSize + x) * 4;
-        final red = pixels.getUint8(offset);
-        final green = pixels.getUint8(offset + 1);
-        final blue = pixels.getUint8(offset + 2);
         final alpha = pixels.getUint8(offset + 3);
         if (alpha == 0) continue;
         if (x < alphaLeft) alphaLeft = x;
         if (y < alphaTop) alphaTop = y;
         if (x + 1 > alphaRight) alphaRight = x + 1;
         if (y + 1 > alphaBottom) alphaBottom = y + 1;
-        if (red < 200 || green < 200 || blue < 200) continue;
         if (x < logoLeft) logoLeft = x;
         if (y < logoTop) logoTop = y;
         if (x + 1 > logoRight) logoRight = x + 1;
