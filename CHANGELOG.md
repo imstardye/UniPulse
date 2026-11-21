@@ -4,6 +4,7 @@
 
 **Features**
 
+- **branding** App icon is now the UP mark on its own, without a background (930ff89)
 - **update** When an update has no file to download, the app opens the release page to download it by hand (231bb6b)
 
 **Bug Fixes**
