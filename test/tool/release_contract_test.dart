@@ -266,14 +266,29 @@ if (!resolveBuilds('android', 'arm64')[0].href.endsWith('/UniPulse-$_version-and
       });
 
       test('checks both presence and manifest membership', () {
+        final updaterNames = updaterAssetNames(
+          _read(updaterSource),
+          _version,
+          line,
+        );
+        final omitted = entries.firstWhere(
+          (entry) => !updaterNames.contains(entry.name),
+        );
         File(p.join(dist, 'manifest.json')).writeAsStringSync(
           jsonEncode({
-            'artifacts': [for (final entry in entries.skip(1)) entry.toJson()],
+            'artifacts': [
+              for (final entry in entries)
+                if (entry.name != omitted.name) entry.toJson(),
+            ],
           }),
         );
         expect(
-          () => releaseContractFailures(Directory.current.path, dist),
-          throwsA(isA<PackageError>()),
+          releaseContractFailures(Directory.current.path, dist),
+          contains(
+            '$releaseNotesTemplate looks for '
+            '{{${omitted.os.name}-${omitted.arch.name}-${p.extension(omitted.name).substring(1)}}}, '
+            'which has no artifact',
+          ),
         );
       });
 
@@ -291,6 +306,25 @@ if (!resolveBuilds('android', 'arm64')[0].href.endsWith('/UniPulse-$_version-and
           'in-app updater finds no matching sha256 for $name in $checksums',
         ]);
       });
+
+      test(
+        'catches an installer left from an earlier run that neither list names',
+        () {
+          final stale = '$prefix-$_version-android-arm64.apk';
+          writeManifest(
+            dist,
+            entries.where((entry) => entry.name != stale).toList(),
+          );
+
+          expect(File(p.join(dist, stale)).existsSync(), isTrue);
+          expect(
+            releaseContractFailures(Directory.current.path, dist),
+            contains(
+              'in-app updater finds no sha256 for $stale in the manifest',
+            ),
+          );
+        },
+      );
 
       test('requires the checksum file for the site and updater', () {
         final checksums = releaseChecksumsName(line, _version);

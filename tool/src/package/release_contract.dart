@@ -197,11 +197,16 @@ List<String> releaseContractFailures(String root, String directory) {
     for (final file in Directory(directory).listSync().whereType<File>())
       p.basename(file.path),
   };
-  final failures = [
-    for (final lookup in releaseLookups(root, entries))
-      if (!listed.contains(lookup.name) || !present.contains(lookup.name))
-        '${lookup.reader} looks for ${lookup.name}, which is missing',
-  ];
+  final failures = <String>[];
+  try {
+    failures.addAll([
+      for (final lookup in releaseLookups(root, entries))
+        if (!listed.contains(lookup.name) || !present.contains(lookup.name))
+          '${lookup.reader} looks for ${lookup.name}, which is missing',
+    ]);
+  } on PackageError catch (error) {
+    failures.add(error.message);
+  }
   if (!present.contains(checksums)) return failures;
   final sums = const LineSplitter()
       .convert(File(p.join(directory, checksums)).readAsStringSync())
@@ -209,7 +214,11 @@ List<String> releaseContractFailures(String root, String directory) {
   final digests = {for (final entry in entries) entry.name: entry.sha256};
   final source = File(p.join(root, updaterSource)).readAsStringSync();
   for (final name in updaterAssetNames(source, version, line)) {
-    if (digests[name] != null && !sums.contains('${digests[name]}  $name')) {
+    if (!present.contains(name)) continue;
+    final digest = digests[name];
+    if (digest == null) {
+      failures.add('in-app updater finds no sha256 for $name in the manifest');
+    } else if (!sums.contains('$digest  $name')) {
       failures.add(
         'in-app updater finds no matching sha256 for $name in $checksums',
       );
