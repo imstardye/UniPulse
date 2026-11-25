@@ -14,6 +14,11 @@
               "id": "423f329",
               "scope": "android",
               "text": "App icons in access control and connections load from the cache instead of being redrawn every day"
+            },
+            {
+              "id": "a985232",
+              "scope": "branding",
+              "text": "App icon and tile marks are smaller, with even padding around them"
             }
           ]
         }

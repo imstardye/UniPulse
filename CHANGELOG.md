@@ -5,6 +5,7 @@
 **Bug Fixes**
 
 - **android** App icons in access control and connections load from the cache instead of being redrawn every day (423f329)
+- **branding** App icon and tile marks are smaller, with even padding around them (a985232)
 
 ## v0.9.7 (2026-11-21)
 
