@@ -13,7 +13,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const EXEMPT = ['OWNER', 'MEMBER', 'COLLABORATOR'];
 const EMPTY = '_No response_';
 const GATE_SINCE = '2026-11-20';
-const RELEASE = /^v?(\d+)\.(\d+)\.(\d+)$/;
+const RELEASE = /^v?(\d+)\.(\d+)\.(\d+)(?:-pre\.(\d+)(?:\+(\d+))?)?$/;
 
 function unquote(text) {
   const trimmed = text.trim();
@@ -115,7 +115,9 @@ function titleProblems(form, title) {
 
 function releaseOf(value) {
   const match = value.match(RELEASE);
-  return match ? match.slice(1).map(Number) : null;
+  if (!match) return null;
+  const [major, minor, patch, pre, rebuild] = match.slice(1);
+  return [major, minor, patch, pre ?? Infinity, rebuild ?? 0].map(Number);
 }
 
 function olderThan(a, b) {

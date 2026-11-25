@@ -9,7 +9,7 @@ const repo = { owner: 'imstardye', repo: 'UniPulse' };
 const github = {
   rest: {
     repos: {
-      getLatestRelease: async () => ({ data: { tag_name: 'v0.9.4', published_at: '2026-11-19T00:00:00Z' } }),
+      getLatestRelease: async () => ({ data: { tag_name: 'v0.9.7', published_at: '2026-11-21T00:00:00Z' } }),
     },
   },
 };
@@ -25,7 +25,7 @@ function completeBody(of) {
         field.type === 'checkboxes'
           ? field.options.map((option) => `- [X] ${option.label}`).join('\n')
           : field.id === 'version'
-            ? 'v0.9.4'
+            ? 'v0.9.7'
             : 'filled';
       return `### ${field.heading}\n\n${value}`;
     })
@@ -50,6 +50,30 @@ test('a complete issue with a real title has no problems', async () => {
   assert.deepEqual(await problems('bug_report.yml', '[BUG] The app crashes on start'), []);
   assert.deepEqual(await problems('feature_request.yml', '[Feature] Sort proxies by name'), []);
   assert.deepEqual(await problems('bug_report.yml', 'Crash on start'), []);
+});
+
+function withVersion(version) {
+  const of = form('bug_report.yml');
+  const reported = issue('bug_report.yml', '[BUG] The app crashes on start');
+  const heading = of.fields.find((field) => field.id === 'version').heading;
+  return {
+    ...reported,
+    body: reported.body.replace(`### ${heading}\n\nv0.9.7`, `### ${heading}\n\n${version}`),
+  };
+}
+
+test('a prerelease the latest release does not supersede is a version to report from', async () => {
+  for (const version of ['v0.9.8-pre.1', 'v0.9.8-pre.2+1', '0.9.8-pre.3']) {
+    assert.deepEqual(await gate.problemsOf(github, repo, withVersion(version), forms), [], version);
+  }
+});
+
+test('a prerelease of the latest release or older is not', async () => {
+  for (const version of ['v0.9.7-pre.3', 'v0.9.7-pre.3+1', 'v0.9.6-pre.1', 'v0.9.8-rs.1', 'v0.9.8-pre']) {
+    const found = await gate.problemsOf(github, repo, withVersion(version), forms);
+    assert.equal(found.length, 1, version);
+    assert.match(found[0], /^版本/, version);
+  }
 });
 
 test('a title that is only the prefix is a problem, whatever its case or spacing', async () => {
