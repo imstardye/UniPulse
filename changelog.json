@@ -6,7 +6,18 @@
       "tag": "v0.9.8",
       "date": "2026-11-25",
       "prerelease": false,
-      "groups": []
+      "groups": [
+        {
+          "type": "fix",
+          "entries": [
+            {
+              "id": "423f329",
+              "scope": "android",
+              "text": "App icons in access control and connections load from the cache instead of being redrawn every day"
+            }
+          ]
+        }
+      ]
     },
     {
       "version": "0.9.7",

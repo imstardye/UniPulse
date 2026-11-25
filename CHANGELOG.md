@@ -2,7 +2,9 @@
 
 ## v0.9.8 (2026-11-25)
 
-Internal improvements only.
+**Bug Fixes**
+
+- **android** App icons in access control and connections load from the cache instead of being redrawn every day (423f329)
 
 ## v0.9.7 (2026-11-21)
 
